@@ -1,49 +1,29 @@
-import java.io.File;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
-import processors.Finder;
+import executors.FindStringInFileExecutorService;
+import workers.FileSystemBroker;
+import workers.MonitorThread;
 
 public class App {
 
-    final static String START_DIR = "/";
-    final static String TO_FIND = "test";
-    final static int RESULT_COUNT = 10;
-    final static int DURATION_TO_EXECUTE = 100;
+    final static String START_DIR = System.getProperty("user.home");
+    final static String TO_FIND = "Getting";
 
     public static void main(String[] args) throws Exception {
-
         final Logger log = Logger.getLogger(App.class.getName());
 
-        final int threadsNumber = Runtime.getRuntime().availableProcessors();
+        MonitorThread monitorThread = new MonitorThread();
 
-        final ForkJoinPool forkJoinPool = new ForkJoinPool(threadsNumber);
+        monitorThread.start();
 
-        Queue<String> result = new ConcurrentLinkedQueue<String>();
+        FindStringInFileExecutorService service = new FindStringInFileExecutorService(TO_FIND, START_DIR);
 
         log.info("Ждем результатов");
+        service.submit(new FileSystemBroker(service)).get();
 
-        Finder finder = new Finder(TO_FIND, RESULT_COUNT, new File(START_DIR), result);
+        log.info(String.format("Количество найденных файлов: %d", service.getResult().size()));
+        log.info(String.format("Нашли сроку: \"%s\" в следующих файлах: %s", TO_FIND, service.toString()));
 
-        forkJoinPool.execute(finder);
-
-        try {
-            finder.get(DURATION_TO_EXECUTE, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            finder.cancel(true);
-
-            log.info("Вышли по timeOut");
-
-        } finally {
-            forkJoinPool.shutdownNow();
-        }
-
-        log.info(String.format("Количество найденных файлов: %d", result.size()));
-        log.info(String.format("Нашли сроку: \"%s\" в следующих файлах: %s", TO_FIND, result.toString()));
     }
 
 }
