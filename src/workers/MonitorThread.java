@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 import java.util.function.BooleanSupplier;
 
-import processors.DirProcessor;
+import processors.AbstractProcessor;
 
 public class MonitorThread {
 
@@ -48,10 +48,10 @@ public class MonitorThread {
         return t -> {
 
             try {
-                DirProcessor.stopper.callback(t.readLine());
+                AbstractProcessor.stopper.callback(t.readLine());
 
             } catch (IOException e) {
-                DirProcessor.stopper.callback("stop");
+                AbstractProcessor.stopper.callback("stop");
             } finally {
                 Thread.currentThread().interrupt();
             }

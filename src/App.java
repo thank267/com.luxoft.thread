@@ -9,7 +9,7 @@ import workers.MonitorThread;
 public class App {
 
     final static String START_DIR = System.getProperty("user.home");
-    final static String TO_FIND = "test";
+    final static String TO_FIND = "asdasdasdasdasdasd";
 
     public static void main(String[] args) throws Exception {
         final Logger log = Logger.getLogger(App.class.getName());
@@ -30,25 +30,17 @@ public class App {
             try {
                 TimeUnit.MILLISECONDS.sleep(5);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.info(e.getMessage());
             }
         } while (!proc.isDone());
 
         service.shutdown();
 
-        
-
-        if (proc.isCompletedNormally()) {
-            log.info("Main: The process has completed normally.\n");
-        } else {
-            log.info("Main: The process has canceled from keyboard!\n");
-        }
-
-        log.info("Нашли");
+        log.info("Нашли: "+ TO_FIND);
 
         log.info(String.format("Количество найденных файлов: %d", proc.getResultList().size()));
 
-        System.out.println(proc.getResultList());
+        log.info(proc.getResultList().toString());
 
         monitorThread.stop();
     }
